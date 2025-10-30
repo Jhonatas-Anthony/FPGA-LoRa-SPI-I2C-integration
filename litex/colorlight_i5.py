@@ -22,7 +22,8 @@ from litex.soc.cores.video import VideoHDMIPHY
 from litex.soc.cores.led import LedChaser
 
 from litex.soc.cores.spi import SPIMaster
-from litex.soc.cores.i2c import I2CMaster
+# from litex.soc.cores.i2c import I2CMaster
+from litex.soc.cores.bitbang import I2CMaster as I2CBitbang
 from litex.soc.cores.gpio import GPIOOut
 
 from litex.build.generic_platform import Subsignal, Pins, IOStandard
@@ -137,9 +138,6 @@ class BaseSoC(SoCCore):
             ledn = platform.request_all("user_led_n")
             self.leds = LedChaser(pads=ledn, sys_clk_freq=sys_clk_freq)
 
-        # self.submodules.fibonacci = Fibonacci(self.platform)
-        # self.add_csr("fibonacci")
-
         # SPI Flash --------------------------------------------------------------------------------
         if board == "i5":
             from litespi.modules import GD25Q16 as SpiFlashModule
@@ -223,7 +221,8 @@ class BaseSoC(SoCCore):
 
         platform.add_extension(i2c_pads)
 
-        self.submodules.i2c0 = I2CMaster(pads=platform.request("i2c"))
+        i2c_pads = platform.request("i2c", 0)
+        self.submodules.i2c0 = I2CBitbang(pads=i2c_pads)
         self.add_csr("i2c0")
 
 
