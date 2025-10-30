@@ -1,6 +1,12 @@
 # Transmissão de dados via LoRa
 
-## Comandos
+## Comandos HARDWARE
+
+Deve estar dentro da pasta "hardware"
+
+```bash
+cd hardware
+```
 
 ### Compilar o código em python e subir
 
