@@ -221,7 +221,7 @@ class BaseSoC(SoCCore):
 
         platform.add_extension(i2c_pads)
 
-        i2c_pads = platform.request("i2c", 0)
+        i2c_pads = platform.request("i2c")
         self.submodules.i2c0 = I2CBitbang(pads=i2c_pads)
         self.add_csr("i2c0")
 
