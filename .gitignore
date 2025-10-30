@@ -1,2 +1,11 @@
 build
 
+*.d
+
+*.o
+
+*.bin
+
+*.elf
+
+*.map
