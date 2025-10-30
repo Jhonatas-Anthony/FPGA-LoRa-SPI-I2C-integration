@@ -1,6 +1,6 @@
 # Transmissão de dados via LoRa
 
-## Comandos HARDWARE
+## Hardware
 
 Deve estar dentro da pasta "hardware"
 
@@ -51,3 +51,9 @@ sudo /home/jhonatas/Downloads/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 
 ```bash
 litex_term /dev/ttyACM0 --kernel firmware/main.bin 
 ```
+
+## Software
+
+cmake -G Ninja -S . -B build
+
+cmake --build build
