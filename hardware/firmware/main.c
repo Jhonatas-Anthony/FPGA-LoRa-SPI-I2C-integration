@@ -1,7 +1,4 @@
-// ==========================================================
-// === Firmware TX bare-metal (RISC-V)                     ===
-// === Envia leituras simuladas de temperatura/umidade via LoRa (RFM9X)
-// ==========================================================
+// Firmware TX bare-metal (RISC-V) para enviar mock de temperatura/umidade via LoRa (RFM9X)
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,64 +13,62 @@
 #include <generated/soc.h>
 #include <system.h>
 
-#include "aht10.h"        // Biblioteca do sensor AHT10
-#include "lora_RFM95.h"   // Biblioteca do módulo LoRa
+// Inclui a biblioteca do sensor AHT10
+#include "aht10.h"
 
-// ==========================================================
-// ===                 DEFINIÇÕES GLOBAIS                 ===
-// ==========================================================
-#define LORA_FREQUENCY 915.0f   // Frequência (MHz) — US915 para Brasil
-#define SENSOR_SEND_INTERVAL_MS 10000  // Intervalo entre envios (10s)
+// Inclui a biblioteca LoRa
+#include "lora_RFM95.h"
 
-// ==========================================================
-// ===                PROTÓTIPOS DE FUNÇÃO                ===
-// ==========================================================
-static void transmit_sensor_data(void);
-static void delay_ms(unsigned int ms);
+// ============================================
+// === Protótipos (Locais do main.c) ===
+// ============================================
+static void send_sensor_data(void);
+static void busy_wait_ms(unsigned int ms); // <<< Adicionado de volta
 
-// ==========================================================
-// ===               UTILITÁRIOS DE TEMPO                 ===
-// ==========================================================
-// Busy-wait simples em milissegundos
-static void delay_ms(unsigned int ms) {
+// ============================================
+// === Utils de tempo ===
+// ============================================
+// Função de espera adicionada de volta a main.c
+static void busy_wait_ms(unsigned int ms) {
     for (unsigned int i = 0; i < ms; ++i) {
 #ifdef CSR_TIMER0_BASE
         busy_wait_us(1000);
 #else
-        for (volatile int j = 0; j < 2000; j++);
+        for(volatile int j = 0; j < 2000; j++);
 #endif
     }
 }
 
-// ==========================================================
-// ===              ROTINA DE TRANSMISSÃO LoRa            ===
-// ==========================================================
-// Lê os dados do sensor AHT10 e envia via LoRa
-static void transmit_sensor_data(void) {
-    sensor_data_t sensor_data; // Renomeado: antes 'dados'
 
+// ============================================
+// === Console ===
+// ============================================
+
+/* Função de aplicação: Lê o sensor AHT10 e envia os dados via LoRa */
+static void send_sensor_data(void) {
+    dados my_data; // Struct 'dados' definida em aht10.h
     printf("Lendo dados do sensor AHT10...\n");
 
-    if (aht10_get_data(&sensor_data)) {
-        printf("  Temperatura: %d.%02d C\n",
-               sensor_data.temperatura / 100,
-               abs(sensor_data.temperatura) % 100);
+    if (aht10_get_data(&my_data)) {
+        printf("  Temperatura: %d.%02d C\n", my_data.temperatura/100, abs(my_data.temperatura) % 100);
+        printf("  Umidade: %d.%02d %%\n", my_data.umidade/100, abs(my_data.umidade) % 100);
 
-        printf("  Umidade: %d.%02d %%\n",
-               sensor_data.umidade / 100,
-               abs(sensor_data.umidade) % 100);
-
-        if (!lora_send_bytes((uint8_t*)&sensor_data, sizeof(sensor_data_t))) {
-            printf("Erro durante o envio via LoRa (verificar log da biblioteca).\n");
+        // Chama a função da biblioteca LoRa
+        if (!lora_send_bytes((uint8_t*)&my_data, sizeof(dados))) {
+             printf("Erro durante o envio LoRa (verificar log da biblioteca).\n");
         }
     } else {
-        printf("Falha na leitura do sensor AHT10. Envio cancelado.\n");
+        printf("Erro ao ler dados do AHT10. Envio LoRa abortado.\n");
     }
 }
 
-// ==========================================================
-// ===                    FUNÇÃO MAIN                     ===
-// ==========================================================
+
+// // Frequência do LoRa em MHz (US915 para BR)
+#define LORA_FREQUENCY 915.0f
+
+// ============================================
+// === main ===
+// ============================================
 int main(void) {
 #ifdef CONFIG_CPU_HAS_INTERRUPT
     irq_setmask(0);
@@ -81,34 +76,35 @@ int main(void) {
 #endif
     uart_init();
 
+// Inicializa timer0 se presente
 #ifdef CSR_TIMER0_BASE
-    // Inicializa timer0 (contagem em microssegundos)
     timer0_en_write(0);
     timer0_reload_write(0);
-    timer0_load_write(CONFIG_CLOCK_FREQUENCY / 1000000);
+    timer0_load_write(CONFIG_CLOCK_FREQUENCY / 1000000); // Configura para contar microssegundos
     timer0_en_write(1);
     timer0_update_value_write(1);
 #endif
 
-    delay_ms(500);
+    busy_wait_ms(500);
 
     printf("\n---------------- LiteX BIOS --------------\n");
-    printf("Tarefa 05 – Transmissão de dados via LoRa\n");
+    printf(  "Tarefa 05 – Transmissão de dados via LoRa \n");
 
-    // Inicializa barramento I2C e periféricos
+    // Inicializa I2C
     i2c_init();
+
+    // Inicializa o sensor AHT10
     aht10_init();
 
-    // Inicializa módulo LoRa
+    // Inicializa LoRa usando a biblioteca
     if (!lora_init()) {
-        printf("FALHA CRÍTICA: Inicialização do módulo LoRa falhou.\n");
-        while (1);
+        printf("FALHA CRÍTICA: Inicialização do LoRa falhou.\n");
+         while(1);
     }
 
-    // Loop principal: lê sensor e transmite via LoRa
     while (1) {
-        transmit_sensor_data();
-        delay_ms(SENSOR_SEND_INTERVAL_MS);
+        send_sensor_data();
+        busy_wait_ms(10000);
     }
 
     return 0;
