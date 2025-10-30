@@ -47,7 +47,7 @@ cd..
 ### Subir o firmware em python para a FPGA
 
 ```bash
-sudo /home/jhonatas/Downloads/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlight_i5/gateware/colorlight_i5.bit
+sudo [SEU-PATH]/Downloads/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlight_i5/gateware/colorlight_i5.bit
 ```
 
 ### Subir o código em C e iniciar o Terminal Serial FPGA
