@@ -14,7 +14,7 @@
 typedef struct {
     int16_t temperatura; // Temperatura * 100
     int16_t umidade;     // Umidade * 100
-} dados;
+} sensor_data_T;
 
 
 // ============================================
@@ -48,6 +48,6 @@ void aht10_read(void);
  * @param d Ponteiro para a struct 'dados' onde os resultados serão armazenados.
  * @return true em sucesso, false em falha.
  */
-bool aht10_get_data(dados *d);
+bool aht10_get_data(sensor_data_T *d);
 
 #endif // AHT10_H_

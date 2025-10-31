@@ -116,7 +116,7 @@ int aht10_init(void) {
     return 0;
 }
 
-bool aht10_get_data(dados *d) {
+bool aht10_get_data(sensor_data_T *d) {
     uint8_t data[6];
     uint32_t raw_hum, raw_temp;
     
@@ -155,7 +155,7 @@ bool aht10_get_data(dados *d) {
 }
 
 void aht10_read(void) {
-    dados my_data;
+    sensor_data_T my_data;
     printf("Lendo AHT10 (modo debug)...\n");
     if (aht10_get_data(&my_data)) {
         printf("Umidade: %d.%02d %%\n",

@@ -11,7 +11,7 @@ cd hardware
 Deve ativar o ambiente do oss-cad-suite
 
 ```bash
-source ~/Downloads/oss-cad-suite/environment
+source [SEU-PATH]/oss-cad-suite/environment
 ```
 
 ### Compilar o código em python e subir
@@ -47,7 +47,7 @@ cd..
 ### Subir o firmware em python para a FPGA
 
 ```bash
-sudo [SEU-PATH]/Downloads/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlight_i5/gateware/colorlight_i5.bit
+sudo [SEU-PATH]/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlight_i5/gateware/colorlight_i5.bit
 ```
 
 ### Subir o código em C e iniciar o Terminal Serial FPGA
@@ -67,3 +67,5 @@ cmake -G Ninja -S . -B build
 
 cmake --build build
 ```
+
+Após isso podemos usar a interface da extensão *Raspberry Pi Pico*
