@@ -60,13 +60,19 @@ litex_term /dev/ttyACM0 --kernel firmware/firmware.bin
 litex> reboot
 ```
 
-## Software
+## BitDogLab
+
+Primeiro, vamos precisar da extensão Raspberry Pi Pico, devemos abrir um projeto dentro da pasta software para realizar as configurações e rodar os comandos.
+
+```bash
+code software/software
+```
+
+Após a extensão identificar que esse diretório é um projeto raspberry pi pico, podemos seguir com os passos
 
 ### Gerar arquivo de build
 
 ```bash
-cd software/software
-
 cmake -G Ninja -S . -B build
 
 cmake --build build
