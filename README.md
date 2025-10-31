@@ -54,6 +54,10 @@ sudo [SEU-PATH]/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlig
 
 ```bash
 litex_term /dev/ttyACM0 --kernel firmware/firmware.bin 
+
+# Após entrar no terminal serial
+
+litex> reboot
 ```
 
 ## Software
