@@ -54,6 +54,12 @@ litex_term /dev/ttyACM0 --kernel firmware/main.bin
 
 ## Software
 
+### Gerar arquivo de build
+
+```bash
+cd software/software
+
 cmake -G Ninja -S . -B build
 
 cmake --build build
+```
