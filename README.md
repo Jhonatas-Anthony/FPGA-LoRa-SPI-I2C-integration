@@ -8,6 +8,12 @@ Deve estar dentro da pasta "hardware"
 cd hardware
 ```
 
+Deve ativar o ambiente do oss-cad-suite
+
+```bash
+source ~/Downloads/oss-cad-suite/environment
+```
+
 ### Compilar o código em python e subir
 
 #### Código completo
@@ -38,18 +44,16 @@ make
 cd..
 ```
 
-### Subir o firmware em python
-
-### Subir o código em c
+### Subir o firmware em python para a FPGA
 
 ```bash
-sudo /home/jhonatas/Downloads/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlight_i5/gateware/colorlight_i5.bit
+sudo [SEU-PATH]/Downloads/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlight_i5/gateware/colorlight_i5.bit
 ```
 
-### Terminal Serial FPGA
+### Subir o código em C e iniciar o Terminal Serial FPGA
 
 ```bash
-litex_term /dev/ttyACM0 --kernel firmware/main.bin 
+litex_term /dev/ttyACM0 --kernel firmware/firmware.bin 
 ```
 
 ## Software

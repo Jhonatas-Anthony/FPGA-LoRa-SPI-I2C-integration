@@ -3,9 +3,9 @@ BUILD_DIR?=../build/colorlight_i5
 include $(BUILD_DIR)/software/include/generated/variables.mak
 include $(SOC_DIRECTORY)/software/common.mak
 
-OBJECTS   = crt0.o main.o
+OBJECTS   = crt0.o main.o aht10.o lora_RFM95.o
 
-all: main.bin
+all: firmware.bin
 
 # pull in dependency info for *existing* .o files
 -include $(OBJECTS:.o=.d)
@@ -14,7 +14,7 @@ all: main.bin
 	$(OBJCOPY) -O binary $< $@
 	chmod -x $@
 
-main.elf: $(OBJECTS)
+firmware.elf: $(OBJECTS)
 	$(CC) $(LDFLAGS) -T linker.ld -N -o $@ \
 		$(OBJECTS) \
 		$(PACKAGES:%=-L$(BUILD_DIR)/software/%) \
@@ -34,6 +34,6 @@ crt0.o: $(CPU_DIRECTORY)/crt0.S
 	$(assemble)
 
 clean:
-	$(RM) $(OBJECTS) main.elf main.bin .*~ *~
+	$(RM) $(OBJECTS) firmware.elf firmware.bin .*~ *~
 
 .PHONY: all clean

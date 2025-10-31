@@ -17,25 +17,19 @@ from litex_boards.platforms import colorlight_i5
 from litex.soc.cores.clock import *
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
-from litex.soc.doc import generate_docs
 from litex.soc.cores.video import VideoHDMIPHY
 from litex.soc.cores.led import LedChaser
-
-from litex.soc.cores.spi import SPIMaster
-# from litex.soc.cores.i2c import I2CMaster
-from litex.soc.cores.bitbang import I2CMaster as I2CBitbang
-from litex.soc.cores.gpio import GPIOOut
-
 from litex.build.generic_platform import Subsignal, Pins, IOStandard
 
 from litex.soc.interconnect.csr import *
+from litex.soc.cores.bitbang import I2CMaster
+from litex.soc.cores.spi import SPIMaster
+from litex.soc.cores.gpio import GPIOIn, GPIOOut
 
 from litedram.modules import M12L64322A # Compatible with EM638325-6H.
 from litedram.phy import GENSDRPHY, HalfRateGENSDRPHY
 
 from liteeth.phy.ecp5rgmii import LiteEthPHYRGMII
-
-# from fibonacci import Fibonacci
 
 # CRG ----------------------------------------------------------------------------------------------
 
@@ -105,11 +99,6 @@ class _CRG(LiteXModule):
 
 class BaseSoC(SoCCore):
     def __init__(self, board="i5", revision="7.0", toolchain="trellis", sys_clk_freq=60e6,
-        with_ethernet          = False,
-        with_etherbone         = False,
-        local_ip               = "",
-        remote_ip              = "",
-        eth_phy                = 0,
         with_led_chaser        = True,
         use_internal_osc       = False,
         sdram_rate             = "1:1",
@@ -138,7 +127,7 @@ class BaseSoC(SoCCore):
             ledn = platform.request_all("user_led_n")
             self.leds = LedChaser(pads=ledn, sys_clk_freq=sys_clk_freq)
 
-        # SPI Flash --------------------------------------------------------------------------------
+    # SPI Flash --------------------------------------------------------------------------------
         if board == "i5":
             from litespi.modules import GD25Q16 as SpiFlashModule
         if board == "i9":
@@ -157,74 +146,44 @@ class BaseSoC(SoCCore):
                 l2_cache_size = kwargs.get("l2_size", 8192)
             )
 
-        # Ethernet / Etherbone ---------------------------------------------------------------------
-        if with_ethernet or with_etherbone:
-            self.ethphy = LiteEthPHYRGMII(
-                clock_pads = self.platform.request("eth_clocks", eth_phy),
-                pads       = self.platform.request("eth", eth_phy),
-                tx_delay = 0)
-            if with_ethernet:
-                self.add_ethernet(phy=self.ethphy)
-            if with_etherbone:
-                self.add_etherbone(phy=self.ethphy)
-
-        if local_ip:
-            local_ip = local_ip.split(".")
-            self.add_constant("LOCALIP1", int(local_ip[0]))
-            self.add_constant("LOCALIP2", int(local_ip[1]))
-            self.add_constant("LOCALIP3", int(local_ip[2]))
-            self.add_constant("LOCALIP4", int(local_ip[3]))
-
-        if remote_ip:
-            remote_ip = remote_ip.split(".")
-            self.add_constant("REMOTEIP1", int(remote_ip[0]))
-            self.add_constant("REMOTEIP2", int(remote_ip[1]))
-            self.add_constant("REMOTEIP3", int(remote_ip[2]))
-            self.add_constant("REMOTEIP4", int(remote_ip[3]))
-
-        # Video ------------------------------------------------------------------------------------
-        if with_video_terminal or with_video_framebuffer:
-            self.videophy = VideoHDMIPHY(platform.request("gpdi"), clock_domain="hdmi")
-            if with_video_terminal:
-                self.add_video_terminal(phy=self.videophy, timings="800x600@60Hz", clock_domain="hdmi")
-            if with_video_framebuffer:
-                self.add_video_framebuffer(phy=self.videophy, timings="800x600@60Hz", clock_domain="hdmi")
-
-        # PINS CN2  
+        # Configuração dos pinos SPI (para LoRa RFM95) -----------------------------------------------
         spi_pads = [
-            ("spi", 0, 
-                Subsignal("clk", Pins("G20")),  # FPGA PIN - G20 ; PIN 14
-                Subsignal("mosi", Pins("L18")), # FPGA PIN - L18 ; PIN 12
-                Subsignal("miso", Pins("M18")), # FPGA PIN - M18 ; PIN 11
-                Subsignal("cs_n", Pins("N17")), # FPGA PIN - N17 ; PIN 9
+            ("spi", 0,
+                Subsignal("clk",  Pins("G20")),
+                Subsignal("mosi", Pins("L18")),
+                Subsignal("miso", Pins("M18")),
+                Subsignal("cs_n", Pins("N17")),
                 IOStandard("LVCMOS33")
             ),
-            ("spi_rst", 0, Pins("L20"), IOStandard("LVCMOS33"))
+            # RESET separado como GPIO
+            ("lora_reset", 0, Pins("L20"), IOStandard("LVCMOS33"))
         ]
 
         platform.add_extension(spi_pads)
 
-        self.spi = SPIMaster(pads=platform.request("spi"), data_width=8, sys_clk_freq=sys_clk_freq,
-                             spi_clk_freq=1e6)
+        # Adiciona o Core SPI Master e o CSR 'spi'
+        self.spi = SPIMaster(pads=platform.request("spi"), data_width=8, sys_clk_freq=sys_clk_freq, spi_clk_freq=1e6)
         self.add_csr("spi")
-        self.submodules.spi_rst = GPIOOut(platform.request("spi_rst"))
-        self.add_csr("spi_rst")
 
-        # PINS J2
+        # Adiciona o Core GPIOOut e o CSR 'lora_reset'
+        self.submodules.lora_reset = GPIOOut(platform.request("lora_reset"))
+        self.add_csr("lora_reset")
+
+        # Configuração dos pinos I2C (para AHT10) ---------------------------------------------------
         i2c_pads = [
-            ("i2c", 0, 
-                Subsignal("sda", Pins("U18")),  # FPGA PIN - U18 ; PIN 2
-                Subsignal("scl", Pins("U17")),  # FPGA PIN - U17 ; PIN 1
+            ("i2c", 0,
+                Subsignal("scl", Pins("U17")),
+                Subsignal("sda", Pins("U18")),
                 IOStandard("LVCMOS33")
             )
         ]
 
         platform.add_extension(i2c_pads)
-
-        i2c_pads = platform.request("i2c")
-        self.submodules.i2c0 = I2CBitbang(pads=i2c_pads)
-        self.add_csr("i2c0")
-
+        
+        # Adiciona o Core I2CMaster (Bitbang) e o CSR 'i2c'
+        self.submodules.i2c = I2CMaster(pads=platform.request("i2c"))
+        self.add_csr("i2c")
+   
 
 # Build --------------------------------------------------------------------------------------------
 
@@ -248,20 +207,28 @@ def main():
     viopts = parser.target_group.add_mutually_exclusive_group()
     viopts.add_argument("--with-video-terminal",    action="store_true", help="Enable Video Terminal (HDMI).")
     viopts.add_argument("--with-video-framebuffer", action="store_true", help="Enable Video Framebuffer (HDMI).")
+    # Recursos do projeto LoRa/AHT10
+    parser.add_target_argument("--with-lora",     action="store_true", help="Habilita SPI para módulo LoRa (RFM96).")
+    parser.add_target_argument("--with-aht10",    action="store_true", help="Habilita I2C para sensor AHT10.")
+    parser.add_target_argument("--use-example-pins", action="store_true", help="Carrega arquivo de pinos de exemplo (edite pins_colorlight_i9_ext.py).")
+    
     args = parser.parse_args()
 
     soc = BaseSoC(board=args.board, revision=args.revision,
         toolchain              = args.toolchain,
         sys_clk_freq           = args.sys_clk_freq,
         with_ethernet          = args.with_ethernet,
+        sdram_rate             = args.sdram_rate,
         with_etherbone         = args.with_etherbone,
         local_ip               = args.local_ip,
         remote_ip              = args.remote_ip,
         eth_phy                = args.eth_phy,
         use_internal_osc       = args.use_internal_osc,
-        sdram_rate             = args.sdram_rate,
         with_video_terminal    = args.with_video_terminal,
         with_video_framebuffer = args.with_video_framebuffer,
+        with_lora_spi          = args.with_lora,
+        with_i2c_aht10         = args.with_aht10,
+        use_example_pins       = args.use_example_pins,
         **parser.soc_argdict
     )
     soc.platform.add_extension(colorlight_i5._sdcard_pmod_io)
@@ -274,11 +241,9 @@ def main():
     if args.build:
         builder.build(**parser.toolchain_argdict)
 
-    generate_docs(soc, "build/doc")
-
     if args.load:
         prog = soc.platform.create_programmer()
         prog.load_bitstream(builder.get_bitstream_filename(mode="sram"))
 
 if __name__ == "__main__":
-    main() 
+    main()
