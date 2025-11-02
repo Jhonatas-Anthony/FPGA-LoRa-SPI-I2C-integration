@@ -75,7 +75,7 @@ litex> reboot
 Primeiro, vamos precisar da extensão Raspberry Pi Pico, devemos abrir um projeto dentro da pasta ```software/software``` para realizar as configurações e rodar os comandos.
 
 ```bash
-code software/software
+code software/software # Ou abrir usando a interface gráfica ou outro comando para sua IDE 
 ```
 
 Após a extensão identificar que esse diretório é um projeto raspberry pi pico, podemos seguir com os passos
