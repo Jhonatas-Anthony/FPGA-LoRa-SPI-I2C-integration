@@ -1,0 +1,30 @@
+LORA_RESET
+==========
+
+Register Listing for LORA_RESET
+-------------------------------
+
++----------------------------------------+------------------------------------+
+| Register                               | Address                            |
++========================================+====================================+
+| :ref:`LORA_RESET_OUT <LORA_RESET_OUT>` | :ref:`0xf0000800 <LORA_RESET_OUT>` |
++----------------------------------------+------------------------------------+
+
+LORA_RESET_OUT
+^^^^^^^^^^^^^^
+
+`Address: 0xf0000800 + 0x0 = 0xf0000800`
+
+    GPIO Output(s) Control.
+
+    .. wavedrom::
+        :caption: LORA_RESET_OUT
+
+        {
+            "reg": [
+                {"name": "out", "bits": 1},
+                {"bits": 31},
+            ], "config": {"hspace": 400, "bits": 32, "lanes": 4 }, "options": {"hspace": 400, "bits": 32, "lanes": 4}
+        }
+
+

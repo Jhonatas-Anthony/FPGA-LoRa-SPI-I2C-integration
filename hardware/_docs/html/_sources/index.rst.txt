@@ -1,0 +1,38 @@
+
+Documentation for LiteX SoC Project
+===================================
+
+
+
+Modules
+=======
+
+.. toctree::
+    :maxdepth: 1
+
+    interrupts
+
+Register Groups
+===============
+
+.. toctree::
+    :maxdepth: 1
+
+    spi
+    lora_reset
+    i2c
+    ctrl
+    identifier_mem
+    leds
+    sdram
+    spiflash
+    timer0
+    uart
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
