@@ -149,10 +149,10 @@ class BaseSoC(SoCCore):
         # Configuração dos pinos SPI (para LoRa RFM95) -----------------------------------------------
         spi_pads = [
             ("spi", 0,
-                Subsignal("clk",  Pins("G20")),
-                Subsignal("mosi", Pins("L18")),
-                Subsignal("miso", Pins("M18")),
-                Subsignal("cs_n", Pins("N17")),
+                Subsignal("clk",  Pins("G20")), # FPGA PIN - G20 ; PIN 14
+                Subsignal("mosi", Pins("L18")), # FPGA PIN - L18 ; PIN 12
+                Subsignal("miso", Pins("M18")), # FPGA PIN - M18 ; PIN 11
+                Subsignal("cs_n", Pins("N17")), # FPGA PIN - N17 ; PIN 9
                 IOStandard("LVCMOS33")
             ),
             # RESET separado como GPIO
@@ -172,8 +172,8 @@ class BaseSoC(SoCCore):
         # Configuração dos pinos I2C (para AHT10) ---------------------------------------------------
         i2c_pads = [
             ("i2c", 0,
-                Subsignal("scl", Pins("U17")),
-                Subsignal("sda", Pins("U18")),
+                Subsignal("scl", Pins("U17")), # FPGA PIN - U17 ; PIN 1
+                Subsignal("sda", Pins("U18")), # FPGA PIN - U18 ; PIN 2
                 IOStandard("LVCMOS33")
             )
         ]
