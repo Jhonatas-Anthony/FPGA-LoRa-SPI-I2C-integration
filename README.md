@@ -1,4 +1,18 @@
-# Transmissão de dados via LoRa
+# Transmissão de dados via LoRa — Projeto (FPGA ColorLight i9 ↔ BitDogLab)
+
+## Resumo
+SoC customizado (LiteX, VexRiscv) na ColorLight i9 lê AHT10 via I2C e transmite periodicamente (10 s) dados de temperatura/umidade via módulo LoRa RFM96 conectado por SPI. A BitDogLab recebe e exibe no OLED.
+
+---
+
+## Estrutura do repositório
+
+```
+hardware/ # Wrapper LiteX e scripts para gerar bitstream
+hardware/firmware/ # Firmware C para o VexRiscv (FPGA)
+software/software # Firmware do BitDogLab (receptor)
+README.md
+```
 
 ## Hardware
 
@@ -25,28 +39,24 @@ pip3 install sphinxcontrib-wavedrom sphinx
 #### Código completo
 
 ```bash
+# build completo (gera bitstream e firmware if enabled)
 python3 litex/colorlight_i5.py --board i9 --revision 7.2 --build --load --ecppack-compress
+
+# apenas build
+python3 litex/colorlight_i5.py --board i9 --revision 7.2 --build
+
+# apenas load (upload bitstream)
+python3 litex/colorlight_i5.py --board i9 --revision 7.2 --load --ecppack-compress
+
 ```
 
-#### Apenas compilar 
-
-```bash
-python3 litex/colorlight_i5.py --board i9 --revision 7.2 --build 
-```
-
-#### Apenas subir
-
-```bash
-python3 litex/colorlight_i5.py --load --ecppack-compress
-```
-
-Após essa etapa, é possível gerar a documentação com o seguinte comando
+```OPCIONAL``` - Após essa etapa, é possível gerar a documentação com o seguinte comando
 
 ```bash
 sphinx-build -M html build/doc/ build/doc/_docs
 ```
 
-O arquivo gerado foi copiado dentro da pasta de hardware.
+O arquivo gerado por esse comando está presente na raiz do arquivo hardware - nome: _docs
 
 ### Compilar o código em c
 
@@ -69,7 +79,7 @@ sudo [SEU-PATH]/oss-cad-suite/bin/openFPGALoader -b colorlight-i5 build/colorlig
 ```bash
 litex_term /dev/ttyACM0 --kernel firmware/firmware.bin 
 
-# Após entrar no terminal serial
+# no litex> prompt:
 
 litex> reboot
 ```
@@ -159,3 +169,36 @@ OLED | Mostra temperatura e umidade em tempo real
 4. MCU decodifica e mostra no OLED
 
 ---
+
+# Informações
+
+## Pinos Mapeados
+
+### SPI (LoRa)
+
+| Função  | FPGA pin | PIN |
+| ------- | -------: | --- |
+| SPI CLK |      G20 | 14  |
+| MOSI    |      L18 | 12  |
+| MISO    |      M18 | 11  |
+| CS_N    |      N17 | 9   |
+| RESET   |      L20 | 10  |
+
+
+### I2C (AHT10)
+
+| Função | FPGA pin | PIN |
+| ------ | -------: | --- |
+| SCL    |      U17 | 1   |
+| SDA    |      U18 | 2   |
+
+## Dados sobre frequência
+
+- ```sys_clk_freq do SoC:``` 60 MHz (padrão no wrapper). Ajustável via --sys-clk-freq.
+
+- LoRa:
+    - frequência central: 915 MHz (verifique legislação local).
+    - Bandwidth: 125 kHz
+
+- SPI para LoRa: 1–8 MHz.
+- I2C: 100 kHz (bitbang I2C master)
