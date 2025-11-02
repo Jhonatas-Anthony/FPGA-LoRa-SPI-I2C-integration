@@ -17,6 +17,7 @@ from litex_boards.platforms import colorlight_i5
 from litex.soc.cores.clock import *
 from litex.soc.integration.soc_core import *
 from litex.soc.integration.builder import *
+from litex.soc.doc import generate_docs
 from litex.soc.cores.video import VideoHDMIPHY
 from litex.soc.cores.led import LedChaser
 from litex.build.generic_platform import Subsignal, Pins, IOStandard
@@ -240,6 +241,8 @@ def main():
     builder = Builder(soc, **parser.builder_argdict)
     if args.build:
         builder.build(**parser.toolchain_argdict)
+
+    generate_docs(soc, "build/doc")
 
     if args.load:
         prog = soc.platform.create_programmer()
