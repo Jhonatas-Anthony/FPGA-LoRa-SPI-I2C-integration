@@ -14,6 +14,12 @@ Deve ativar o ambiente do oss-cad-suite
 source [SEU-PATH]/oss-cad-suite/environment
 ```
 
+Garanta que o ambiente do oss-cad-suite possui tudo que é necessário, inclusive a biblioteca auxiliar usada para gerar o doc 
+
+```bash
+pip3 install sphinxcontrib-wavedrom sphinx
+```
+
 ### Compilar o código em python e subir
 
 #### Código completo
@@ -33,6 +39,14 @@ python3 litex/colorlight_i5.py --board i9 --revision 7.2 --build
 ```bash
 python3 litex/colorlight_i5.py --load --ecppack-compress
 ```
+
+Após essa etapa, é possível gerar a documentação com o seguinte comando
+
+```bash
+sphinx-build -M html build/doc/ build/doc/_docs
+```
+
+O arquivo gerado foi copiado dentro da pasta de hardware.
 
 ### Compilar o código em c
 
